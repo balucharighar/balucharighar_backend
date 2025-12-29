@@ -82,4 +82,35 @@ class ProductController extends Controller
             'data' => $product
         ], 201);
     }
+
+    public function getProduct(Request $request){
+
+        $products = Product::query()
+
+        ->when($request->search, function($q) use($request){
+            $q->where('name', 'like', '%' . $request->search . '%');
+        })
+
+        ->when($request->category, function($q) use($request){
+            $q->where('category_id', $request->category);
+        })
+
+        ->when($request->min_price, function($q) use($request){
+            $q->where('price', '>=', $request->min_price);
+        })
+
+        ->when($request->max_price, function($q) use($request){
+            $q->where('price', '<=', $request->max_price);
+        })
+
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+        return response()->json([
+            'status'=> true,
+            'status_code'=> 200,
+            'product'=> $products
+        ]);
+
+    }
 }
