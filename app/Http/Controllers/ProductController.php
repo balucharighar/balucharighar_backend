@@ -85,16 +85,19 @@ class ProductController extends Controller
     public function getProduct(Request $request)
     {
         $products = Product::query()
-            ->when($request->search, function ($q) use ($request) {
+            ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
             })
-            ->when($request->category, function ($q) use ($request) {
+            ->when($request->filled('category'), function ($q) use ($request) {
                 $q->where('category_id', $request->category);
             })
-            ->when($request->min_price, function ($q) use ($request) {
+            ->when(isset($request->min_price) && isset($request->max_price), function ($q) use ($request) {
+                $q->whereBetween('price', [$request->min_price, $request->max_price]);
+            })
+            ->when(isset($request->min_price) && !isset($request->max_price), function ($q) use ($request) {
                 $q->where('price', '>=', $request->min_price);
             })
-            ->when($request->max_price, function ($q) use ($request) {
+            ->when(!isset($request->min_price) && isset($request->max_price), function ($q) use ($request) {
                 $q->where('price', '<=', $request->max_price);
             })
             ->orderBy('created_at', 'desc')
