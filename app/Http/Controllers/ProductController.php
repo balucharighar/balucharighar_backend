@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,14 +13,10 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-
             'short_description' => 'nullable|string|max:255|required_without:description',
             'description' => 'nullable|string|required_without:short_description',
-
             'price' => 'required|numeric|min:0',
-
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-
             'category_id' => 'nullable|integer',
             'discount_type' => 'nullable|in:flat,percent',
             'discount_value' => 'nullable|numeric|min:0',
@@ -43,9 +38,10 @@ class ProductController extends Controller
             $slug = $slug . '-' . ($count + 1);
         }
 
-        $imagePath = null;
+        $imageUrl = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $path = $request->file('image')->store('products', 'public');
+            $imageUrl = url('storage/' . $path);
         }
 
         $finalPrice = $request->price;
@@ -69,7 +65,7 @@ class ProductController extends Controller
             'category_id' => $request->category_id,
             'short_description' => $request->short_description,
             'description' => $request->description,
-            'image' => $imagePath, // DB me sirf path
+            'image' => $imageUrl,
             'price' => $request->price,
             'discount_type' => $request->discount_type,
             'discount_value' => $request->discount_value,
@@ -79,8 +75,6 @@ class ProductController extends Controller
             'demo_link' => $request->demo_link,
         ]);
 
-        $product->image_url = url('storage/' . $product->image);
-
         return response()->json([
             'status' => true,
             'message' => 'Product created successfully',
@@ -88,28 +82,21 @@ class ProductController extends Controller
         ], 201);
     }
 
-
     public function getProduct(Request $request)
     {
-
         $products = Product::query()
-
             ->when($request->search, function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
             })
-
             ->when($request->category, function ($q) use ($request) {
                 $q->where('category_id', $request->category);
             })
-
             ->when($request->min_price, function ($q) use ($request) {
                 $q->where('price', '>=', $request->min_price);
             })
-
             ->when($request->max_price, function ($q) use ($request) {
                 $q->where('price', '<=', $request->max_price);
             })
-
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
