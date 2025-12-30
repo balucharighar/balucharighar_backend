@@ -15,16 +15,13 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
 
-            // at least one description required
             'short_description' => 'nullable|string|max:255|required_without:description',
             'description' => 'nullable|string|required_without:short_description',
 
             'price' => 'required|numeric|min:0',
 
-            // image mandatory now
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
 
-            // optional fields
             'category_id' => 'nullable|integer',
             'discount_type' => 'nullable|in:flat,percent',
             'discount_value' => 'nullable|numeric|min:0',
@@ -32,7 +29,7 @@ class ProductController extends Controller
             'sku' => 'nullable|string|unique:products,sku',
             'demo_link' => 'nullable|url',
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -72,7 +69,7 @@ class ProductController extends Controller
             'category_id' => $request->category_id,
             'short_description' => $request->short_description,
             'description' => $request->description,
-            'image' => $imagePath,
+            'image' => $imagePath, // DB me sirf path
             'price' => $request->price,
             'discount_type' => $request->discount_type,
             'discount_value' => $request->discount_value,
@@ -82,12 +79,15 @@ class ProductController extends Controller
             'demo_link' => $request->demo_link,
         ]);
 
+        $product->image_url = url('storage/' . $product->image);
+
         return response()->json([
             'status' => true,
             'message' => 'Product created successfully',
             'data' => $product
         ], 201);
     }
+
 
     public function getProduct(Request $request)
     {
