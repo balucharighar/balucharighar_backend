@@ -14,19 +14,25 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'category_id' => 'nullable|integer',
-            'short_description' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+
+            // at least one description required
+            'short_description' => 'nullable|string|max:255|required_without:description',
+            'description' => 'nullable|string|required_without:short_description',
+
             'price' => 'required|numeric|min:0',
+
+            // image mandatory now
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+
+            // optional fields
+            'category_id' => 'nullable|integer',
             'discount_type' => 'nullable|in:flat,percent',
             'discount_value' => 'nullable|numeric|min:0',
             'stock' => 'nullable|integer|min:0',
             'sku' => 'nullable|string|unique:products,sku',
             'demo_link' => 'nullable|url',
-            // image optional
-            // 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
-
+        
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -41,7 +47,7 @@ class ProductController extends Controller
         }
 
         $imagePath = null;
-        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+        if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
         }
 
@@ -83,34 +89,34 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function getProduct(Request $request){
+    public function getProduct(Request $request)
+    {
 
         $products = Product::query()
 
-        ->when($request->search, function($q) use($request){
-            $q->where('name', 'like', '%' . $request->search . '%');
-        })
+            ->when($request->search, function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            })
 
-        ->when($request->category, function($q) use($request){
-            $q->where('category_id', $request->category);
-        })
+            ->when($request->category, function ($q) use ($request) {
+                $q->where('category_id', $request->category);
+            })
 
-        ->when($request->min_price, function($q) use($request){
-            $q->where('price', '>=', $request->min_price);
-        })
+            ->when($request->min_price, function ($q) use ($request) {
+                $q->where('price', '>=', $request->min_price);
+            })
 
-        ->when($request->max_price, function($q) use($request){
-            $q->where('price', '<=', $request->max_price);
-        })
+            ->when($request->max_price, function ($q) use ($request) {
+                $q->where('price', '<=', $request->max_price);
+            })
 
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return response()->json([
-            'status'=> true,
-            'status_code'=> 200,
-            'product'=> $products
+            'status' => true,
+            'status_code' => 200,
+            'product' => $products
         ]);
-
     }
 }
