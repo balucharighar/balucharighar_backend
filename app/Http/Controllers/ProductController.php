@@ -17,7 +17,7 @@ class ProductController extends Controller
             'description' => 'nullable|string|required_without:short_description',
             'price' => 'required|numeric|min:0',
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'category_id' => 'nullable|integer',
+            'category_id' => 'required|integer',
             'discount_type' => 'nullable|in:flat,percent',
             'discount_value' => 'nullable|numeric|min:0',
             'stock' => 'nullable|integer|min:0',
