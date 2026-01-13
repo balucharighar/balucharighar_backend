@@ -7,21 +7,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
-        'email',
-        'password',
+        'phone',
+        'otp',
+        'otp_expires_at',
     ];
 
     protected $hidden = [
-        'password',
+        'otp',
         'remember_token',
     ];
+
+    protected $casts = [
+        'otp_expires_at' => 'datetime',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function cart()
     {

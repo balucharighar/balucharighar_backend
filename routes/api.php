@@ -8,40 +8,26 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\WhatsAppController;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes (NO AUTH REQUIRED)
-|--------------------------------------------------------------------------
-*/
-
-// health / test
+// test
 Route::get('/test', [TestController::class, 'ping']);
 
-// auth
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// whatsapp / otp auth
+Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
 // products
-Route::post('/create-product', [ProductController::class, 'store']);
 Route::get('/products', [ProductController::class, 'getProduct']);
+Route::post('/create-product', [ProductController::class, 'store']);
 
-// payment (order create on gateway side)
+// payment
 Route::post('/create-razorpay-order', [CheckoutController::class, 'createOrder']);
-
-
-/*
-|--------------------------------------------------------------------------
-| Protected Routes (AUTH REQUIRED)
-|--------------------------------------------------------------------------
-*/
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // 🔹 auth test route (VERY IMPORTANT FOR DEBUG)
-    Route::get('/me', function () {
-        return auth()->user();
-    });
+    Route::get('/me', fn () => auth()->user());
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     // cart
     Route::post('/cart/add/{productId}', [CartController::class, 'add']);
