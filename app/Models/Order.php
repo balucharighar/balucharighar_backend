@@ -13,6 +13,8 @@ class Order extends Model
         'user_id',
         'status',
         'total_price',
+        'razorpay_order_id',
+        'razorpay_payment_id',
     ];
 
     public function user()
