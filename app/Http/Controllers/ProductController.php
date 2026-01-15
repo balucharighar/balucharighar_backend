@@ -109,4 +109,23 @@ class ProductController extends Controller
             'product' => $products
         ]);
     }
+
+    public function getProductById($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'status_code' => 404,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'status_code' => 200,
+            'product' => $product
+        ], 200);
+    }
 }
