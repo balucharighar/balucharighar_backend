@@ -16,13 +16,11 @@ class OrderItem extends Model
         'quantity',
     ];
 
-    // 🔹 OrderItem -> Order (MANY TO ONE)
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
-    // 🔹 OrderItem -> Product (MANY TO ONE)
     public function product()
     {
         return $this->belongsTo(Product::class);

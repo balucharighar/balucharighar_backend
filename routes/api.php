@@ -23,6 +23,8 @@ Route::post('/create-product', [ProductController::class, 'store']);
 
 // payment
 Route::post('/create-razorpay-order', [CheckoutController::class, 'createOrder']);
+Route::post('/verify-razorpay-payment', [CheckoutController::class, 'verifyPayment']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
 
