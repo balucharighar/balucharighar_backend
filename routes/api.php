@@ -22,15 +22,17 @@ Route::get('/products', [ProductController::class, 'getProduct']);
 Route::get('/products/{id}', [ProductController::class, 'getProductById']);
 Route::post('/create-product', [ProductController::class, 'store']);
 
-// payment
-Route::post('/create-razorpay-order', [CheckoutController::class, 'createOrder']);
-Route::post('/verify-razorpay-payment', [CheckoutController::class, 'verifyPayment']);
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/me', fn () => auth()->user());
+    Route::get('/me', fn() => auth()->user());
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // payment
+    Route::post('/create-razorpay-order', [CheckoutController::class, 'createOrder']);
+    Route::post('/verify-razorpay-payment', [CheckoutController::class, 'verifyPayment']);
 
     // cart
     Route::post('/cart/add/{productId}', [CartController::class, 'add']);
