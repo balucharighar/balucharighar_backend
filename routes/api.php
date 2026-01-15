@@ -19,6 +19,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
 // products
 Route::get('/products', [ProductController::class, 'getProduct']);
+Route::get('/products/{id}', [ProductController::class, 'getProductById']);
 Route::post('/create-product', [ProductController::class, 'store']);
 
 // payment
