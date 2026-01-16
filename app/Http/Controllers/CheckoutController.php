@@ -63,8 +63,10 @@ class CheckoutController extends Controller
 
         DB::transaction(function () use ($request) {
 
+            $userId = auth()->id();
+
             $order = Order::create([
-                'user_id' => auth()->id(),
+                'user_id' => $userId,
                 'status' => 'paid',
                 'total_price' => $request->amount,
                 'razorpay_order_id' => $request->razorpay_order_id,
@@ -72,25 +74,32 @@ class CheckoutController extends Controller
             ]);
 
             $cartItems = DB::table('cart_items')
-                ->where('user_id', auth()->id())
+                ->join('carts', 'cart_items.cart_id', '=', 'carts.id')
+                ->where('carts.user_id', $userId)
+                ->select('cart_items.*')
                 ->get();
 
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
-                    'price' => $item->price,
+                    'price' => 0,
                     'quantity' => $item->quantity,
                 ]);
             }
 
             DB::table('cart_items')
-                ->where('user_id', auth()->id())
+                ->whereIn('cart_id', function ($query) use ($userId) {
+                    $query->select('id')
+                        ->from('carts')
+                        ->where('user_id', $userId);
+                })
                 ->delete();
         });
 
         return response()->json([
-            'message' => 'Order placed successfully'
+            'message' => 'Order placed successfully',
+            'status' => true
         ]);
     }
 }
