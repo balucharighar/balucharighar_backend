@@ -9,6 +9,13 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\FeedbackController;
+
+Route::post('/feedback', [FeedbackController::class, 'store']);
+Route::get('/feedback', [FeedbackController::class, 'index']);
+Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
+Route::get('/feedback-stats', [FeedbackController::class, 'stats']);
 
 // test
 Route::get('/test', [TestController::class, 'ping']);
@@ -21,6 +28,11 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::get('/products', [ProductController::class, 'getProduct']);
 Route::get('/products/{id}', [ProductController::class, 'getProductById']);
 Route::post('/create-product', [ProductController::class, 'store']);
+
+//admin
+
+Route::post('/admin-login', [AdminController::class, 'login']);
+Route::get('/logout-admin', [AdminController::class, 'logout']);
 
 
 

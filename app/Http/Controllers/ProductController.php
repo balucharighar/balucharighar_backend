@@ -100,8 +100,7 @@ class ProductController extends Controller
             ->when(!isset($request->min_price) && isset($request->max_price), function ($q) use ($request) {
                 $q->where('price', '<=', $request->max_price);
             })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
 
         return response()->json([
             'status' => true,
