@@ -16,6 +16,7 @@ class FeedbackController extends Controller
             'rating' => 'required|integer|min:1|max:10',
 
             'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
             'city' => 'nullable|string|max:255',
             'liked' => 'nullable|string',
             'confused' => 'nullable|string',
