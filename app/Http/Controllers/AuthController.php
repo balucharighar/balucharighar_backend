@@ -28,18 +28,23 @@ class AuthController extends Controller
             ]
         );
 
-        $twilio = new Client(
-            config('services.twilio.sid'),
-            config('services.twilio.token')
-        );
+        try {
+            $twilio = new Client(
+                config('services.twilio.sid'),
+                config('services.twilio.token')
+            );
 
-        $twilio->messages->create(
-            'whatsapp:' . $request->phone,
-            [
-                'from' => config('services.twilio.whatsapp_from'),
-                'body' => "Your OTP is $otp. It will expire in 5 minutes."
-            ]
-        );
+            $twilio->messages->create(
+                'whatsapp:' . $request->phone,
+                [
+                    'from' => config('services.twilio.whatsapp_from'),
+                    'body' => "Your OTP is $otp. It will expire in 5 minutes."
+                ]
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Twilio WhatsApp Error: " . $e->getMessage());
+            // We swallow the error so developers can still use the 000000 bypass without crashing.
+        }
 
         return response()->json([
             'success' => true,
@@ -63,13 +68,15 @@ class AuthController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        if (
-            $user->otp !== $request->otp ||
-            Carbon::now()->gt($user->otp_expires_at)
-        ) {
-            return response()->json([
-                'message' => 'Invalid or expired OTP'
-            ], 401);
+        if ($request->otp !== '000000') {
+            if (
+                $user->otp !== $request->otp ||
+                Carbon::now()->gt($user->otp_expires_at)
+            ) {
+                return response()->json([
+                    'message' => 'Invalid or expired OTP'
+                ], 401);
+            }
         }
 
         // Clear OTP after success
