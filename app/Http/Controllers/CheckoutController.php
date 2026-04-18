@@ -73,28 +73,22 @@ class CheckoutController extends Controller
                 'razorpay_payment_id' => $request->razorpay_payment_id,
             ]);
 
-            $cartItems = DB::table('cart_items')
-                ->join('carts', 'cart_items.cart_id', '=', 'carts.id')
-                ->where('carts.user_id', $userId)
-                ->select('cart_items.*')
-                ->get();
+            $cart = \App\Models\Cart::where('user_id', $userId)->with('items.product')->first();
 
-            foreach ($cartItems as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'price' => 0,
-                    'quantity' => $item->quantity,
-                ]);
+            if ($cart) {
+                foreach ($cart->items as $item) {
+                    $price = $item->product->final_price ?? $item->product->price;
+                    
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $item->product_id,
+                        'price' => $price,
+                        'quantity' => $item->quantity,
+                    ]);
+                }
+
+                $cart->items()->delete();
             }
-
-            DB::table('cart_items')
-                ->whereIn('cart_id', function ($query) use ($userId) {
-                    $query->select('id')
-                        ->from('carts')
-                        ->where('user_id', $userId);
-                })
-                ->delete();
         });
 
         return response()->json([

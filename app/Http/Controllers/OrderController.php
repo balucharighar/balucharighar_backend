@@ -45,4 +45,37 @@ class OrderController extends Controller
             'order_id' => $order->id
         ]);
     }
+
+    public function index()
+    {
+        $user = auth()->user();
+        
+        $orders = Order::where('user_id', $user->id)
+            ->with(['items.product'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($orders);
+    }
+
+    public function cancel($id)
+    {
+        $user = auth()->user();
+        
+        $order = Order::where('id', $id)->where('user_id', $user->id)->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        if (in_array($order->status, ['cancelled', 'delivered'])) {
+            return response()->json(['message' => 'Order cannot be cancelled'], 400);
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        return response()->json([
+            'message' => 'Order cancelled successfully'
+        ]);
+    }
 }
