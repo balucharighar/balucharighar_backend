@@ -33,6 +33,11 @@ Route::post('/create-product', [ProductController::class, 'store']);
 
 Route::post('/admin-login', [AdminController::class, 'login']);
 Route::get('/logout-admin', [AdminController::class, 'logout']);
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+Route::get('/admin/orders', [AdminController::class, 'allOrders']);
+Route::put('/admin/orders/{id}/status', [AdminController::class, 'updateOrderStatus']);
+Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
 
 
 

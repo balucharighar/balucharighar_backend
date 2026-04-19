@@ -128,4 +128,95 @@ class ProductController extends Controller
             'product' => $product
         ], 200);
     }
+
+    public function update(Request $request, $id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'short_description' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'category_id' => 'sometimes|integer',
+            'discount_type' => 'nullable|in:flat,percent',
+            'discount_value' => 'nullable|numeric|min:0',
+            'stock' => 'nullable|integer|min:0',
+            'sku' => 'nullable|string|unique:products,sku,' . $id,
+            'demo_link' => 'nullable|url',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $product->image = url('storage/' . $path);
+        }
+
+        if ($request->has('name')) {
+            $product->name = $request->name;
+            $slug = Str::slug($request->name);
+            $count = Product::where('slug', 'like', $slug . '%')->where('id', '!=', $id)->count();
+            $product->slug = $count > 0 ? $slug . '-' . ($count + 1) : $slug;
+        }
+
+        $price = $request->price ?? $product->price;
+        $discountType = $request->discount_type ?? $product->discount_type;
+        $discountValue = $request->discount_value ?? $product->discount_value;
+
+        $finalPrice = $price;
+        if ($discountType && $discountValue) {
+            if ($discountType === 'flat') {
+                $finalPrice = max(0, $price - $discountValue);
+            }
+            if ($discountType === 'percent') {
+                $finalPrice = max(0, $price - ($price * $discountValue / 100));
+            }
+        }
+
+        $product->fill($request->only([
+            'category_id', 'short_description', 'description',
+            'price', 'discount_type', 'discount_value', 'stock', 'sku', 'demo_link'
+        ]));
+        $product->final_price = $finalPrice;
+        $product->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product updated successfully',
+            'data' => $product
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not found'
+            ], 404);
+        }
+
+        $product->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product deleted successfully'
+        ]);
+    }
 }
