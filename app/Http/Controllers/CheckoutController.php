@@ -42,6 +42,11 @@ class CheckoutController extends Controller
             'razorpay_order_id' => 'required',
             'razorpay_signature' => 'required',
             'amount' => 'required|numeric',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string',
+            'city' => 'required|string|max:255',
+            'pincode' => 'required|string|max:10',
         ]);
 
         $api = new Api(
@@ -64,6 +69,12 @@ class CheckoutController extends Controller
         DB::transaction(function () use ($request) {
 
             $userId = auth()->id();
+            
+            // Update user's name if it's currently null
+            $user = \App\Models\User::find($userId);
+            if ($user && empty($user->name)) {
+                $user->update(['name' => $request->name]);
+            }
 
             $order = Order::create([
                 'user_id' => $userId,
@@ -71,6 +82,11 @@ class CheckoutController extends Controller
                 'total_price' => $request->amount,
                 'razorpay_order_id' => $request->razorpay_order_id,
                 'razorpay_payment_id' => $request->razorpay_payment_id,
+                'shipping_name' => $request->name,
+                'shipping_phone' => $request->phone,
+                'shipping_address' => $request->address,
+                'shipping_city' => $request->city,
+                'shipping_pincode' => $request->pincode,
             ]);
 
             $cart = \App\Models\Cart::where('user_id', $userId)->with('items.product')->first();
