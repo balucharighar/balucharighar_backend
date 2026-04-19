@@ -48,8 +48,8 @@ class AdminController extends Controller
     {
         $totalProducts = Product::count();
         $totalOrders = Order::count();
-        $totalRevenue = Order::where('status', 'paid')->sum('total_price');
-        $pendingOrders = Order::where('status', 'pending')->count();
+        $totalRevenue = Order::whereIn('status', ['confirmed', 'out_for_delivery', 'received', 'paid'])->sum('total_price');
+        $pendingOrders = Order::where('status', 'confirmed')->count();
 
         return response()->json([
             'total_products' => $totalProducts,
@@ -71,7 +71,7 @@ class AdminController extends Controller
     public function updateOrderStatus(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:pending,paid,shipped,delivered,cancelled',
+            'status' => 'required|in:confirmed,out_for_delivery,received',
         ]);
 
         $order = Order::find($id);

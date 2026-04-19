@@ -15,17 +15,24 @@ class AuthController extends Controller
     public function sendOtp(Request $request)
     {
         $request->validate([
-            'phone' => 'required|regex:/^\+\d{10,15}$/'
+            'phone' => 'required|regex:/^\+\d{10,15}$/',
+            'name' => 'nullable|string|max:255',
         ]);
 
         $otp = rand(100000, 999999);
 
+        $updateData = [
+            'otp' => $otp,
+            'otp_expires_at' => Carbon::now()->addMinutes(5),
+        ];
+
+        if ($request->filled('name')) {
+            $updateData['name'] = $request->name;
+        }
+
         $user = User::updateOrCreate(
             ['phone' => $request->phone],
-            [
-                'otp' => $otp,
-                'otp_expires_at' => Carbon::now()->addMinutes(5),
-            ]
+            $updateData
         );
 
         try {

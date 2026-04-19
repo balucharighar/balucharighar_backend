@@ -73,7 +73,7 @@ class ProductController extends Controller
             'is_fake_discount' => $isFakeDiscount,
             'final_price' => $finalPrice,
             'stock' => $request->stock ?? 0,
-            'sku' => $request->sku,
+            'sku' => $request->sku ?? ('BG-' . $request->category_id . '-' . time()),
             'demo_link' => $request->demo_link,
         ]);
 
