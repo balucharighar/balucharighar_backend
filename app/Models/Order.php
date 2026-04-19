@@ -15,6 +15,11 @@ class Order extends Model
         'total_price',
         'razorpay_order_id',
         'razorpay_payment_id',
+        'shipping_name',
+        'shipping_phone',
+        'shipping_address',
+        'shipping_city',
+        'shipping_pincode',
     ];
 
     public function user()
