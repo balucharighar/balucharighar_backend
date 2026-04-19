@@ -19,6 +19,7 @@ class Product extends Model
         'price',
         'discount_type',
         'discount_value',
+        'is_fake_discount',
         'final_price',
         'stock',
         'sku',

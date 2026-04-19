@@ -45,8 +45,9 @@ class ProductController extends Controller
         }
 
         $finalPrice = $request->price;
+        $isFakeDiscount = filter_var($request->is_fake_discount, FILTER_VALIDATE_BOOLEAN);
 
-        if ($request->discount_type && $request->discount_value) {
+        if ($request->discount_type && $request->discount_value && !$isFakeDiscount) {
             if ($request->discount_type === 'flat') {
                 $finalPrice = max(0, $request->price - $request->discount_value);
             }
@@ -69,6 +70,7 @@ class ProductController extends Controller
             'price' => $request->price,
             'discount_type' => $request->discount_type,
             'discount_value' => $request->discount_value,
+            'is_fake_discount' => $isFakeDiscount,
             'final_price' => $finalPrice,
             'stock' => $request->stock ?? 0,
             'sku' => $request->sku,
@@ -176,9 +178,12 @@ class ProductController extends Controller
         $price = $request->price ?? $product->price;
         $discountType = $request->discount_type ?? $product->discount_type;
         $discountValue = $request->discount_value ?? $product->discount_value;
+        $isFakeDiscount = $request->has('is_fake_discount') 
+            ? filter_var($request->is_fake_discount, FILTER_VALIDATE_BOOLEAN) 
+            : $product->is_fake_discount;
 
         $finalPrice = $price;
-        if ($discountType && $discountValue) {
+        if ($discountType && $discountValue && !$isFakeDiscount) {
             if ($discountType === 'flat') {
                 $finalPrice = max(0, $price - $discountValue);
             }
@@ -191,6 +196,7 @@ class ProductController extends Controller
             'category_id', 'short_description', 'description',
             'price', 'discount_type', 'discount_value', 'stock', 'sku', 'demo_link'
         ]));
+        $product->is_fake_discount = $isFakeDiscount;
         $product->final_price = $finalPrice;
         $product->save();
 
